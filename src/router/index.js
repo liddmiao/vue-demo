@@ -1,37 +1,57 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import MainView from '@/MainView/MainView'
-import ErrorPage from '@/views/Error/Error'
 
 Vue.use(VueRouter)
+
+//解决点击路由报错但不影响使用的情况
+const originalPush = VueRouter.prototype.push
+VueRouter.prototype.push = function push(location) {
+  return originalPush.call(this, location).catch(err => err)
+}
 
 export const mainRoutes = [
   {
     path: '/',
-    name: 'MainView',
+    name: 'home',
     component: MainView,
-    meta: { icon: 'el-icon-s-home', title: '首页' }
+    redirect: '/Home',
+    meta: { icon: 'el-icon-s-home', title: '首页' },
+    children: [
+      {
+        path: 'Home',
+        name: 'home',
+        component: () => import('@/views/Home/Home')
+      }
+    ]
   }
 ]
 
 export const pageRoutes = [
   {
-    path: '/test',
-    name: '示例网页',
+    path: '/Error',
+    name: 'error',
     component: MainView,
     meta: { icon: 'el-icon-s-marketing', title: '测试' },
     children: [
       {
-        path: '/test1',
-        component: ErrorPage,
+        path: 'Error',
+        name: 'errorPage',
+        component: () => import('@/views/Error/Error'),
         meta: { title: '测试1' }
+      },
+      {
+        path: 'Home',
+        name: 'home',
+        component: () => import('@/views/Home/Home'),
+        meta: { title: '测试2' }
       }
     ]
   },
   {
     path: '*',
     name: '404',
-    component: ErrorPage,
+    component: () => import('@/views/Error/Error'),
     meta: { icon: 'el-icon-error', title: '错误' }
   }
 ]
